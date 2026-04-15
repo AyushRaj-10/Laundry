@@ -1,3 +1,18 @@
+/**
+ * The above functions handle user registration and login by hashing passwords, generating tokens, and
+ * logging relevant information.
+ * @param req - `req` stands for request and it is an object that represents the HTTP request made by
+ * the client to the server. It contains information about the request such as the headers, body,
+ * parameters, and more. In the provided code snippets, `req` is used to access the data sent by the
+ * @param res - The `res` parameter in your code represents the response object in Express.js. It is
+ * used to send a response back to the client making the request. In your code, you are using `res` to
+ * send JSON responses with status codes such as 200 for successful requests and 400 or
+ * @returns For the `register` function:
+ * - If the user already exists, it returns a status of 400 with a JSON response `{ message: "User
+ * already exists" }`.
+ * - If the registration is successful, it returns a status of 201 with a JSON response containing a
+ * token and user information.
+ */
 import User from "../models/auth.models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

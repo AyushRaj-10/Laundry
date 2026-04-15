@@ -1,3 +1,5 @@
+/* This code snippet is defining Mongoose schemas for a garment and an order in a Node.js application
+using MongoDB as the database. Here's a breakdown of what each part does: */
 import mongoose from "mongoose";
 
 const garmentSchema = new mongoose.Schema({

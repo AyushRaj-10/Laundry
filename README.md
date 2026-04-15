@@ -10,7 +10,7 @@
 ![JWT](https://img.shields.io/badge/Auth-JWT-D63AF9?style=for-the-badge)
 ![Zod](https://img.shields.io/badge/Validation-Zod-3068B7?style=for-the-badge)
 
-A production-oriented MERN application for managing laundry operations end-to-end. The project combines a React admin interface with a modular Express API, MongoDB persistence, JWT-based authentication, and an engineering-first structure designed to stay maintainable as the backend grows.
+A MERN application for managing laundry orders through a React dashboard and a modular Express API. The repository is organized for clarity first: auth, validation, order workflows, and reporting are separated cleanly so backend behavior stays understandable as the project grows.
 
 ## Table of Contents
 
@@ -18,6 +18,7 @@ A production-oriented MERN application for managing laundry operations end-to-en
 - [Core Features](#core-features)
 - [Tech Stack](#tech-stack)
 - [High-Level Architecture](#high-level-architecture)
+- [Current Scope](#current-scope)
 - [Project Structure](#project-structure)
 - [Key Technical Challenges and Solutions](#key-technical-challenges-and-solutions)
 - [API Documentation](#api-documentation)
@@ -28,39 +29,41 @@ A production-oriented MERN application for managing laundry operations end-to-en
 
 ## Overview
 
-This system is built as a split `client` and `server` codebase:
+This project is split into `client` and `server` applications:
 
-- The frontend is a React + Vite admin dashboard for authentication, order creation, order history, and operational analytics.
-- The backend is an Express API organized around `routes`, `controllers`, `models`, `middlewares`, `validators`, and `config` modules.
-- MongoDB stores users and orders, while Mongoose provides schema enforcement and query abstractions.
-- Frontend state is coordinated with the Context API through `AuthContext` and `OrderContext`.
-- Order synchronization is currently HTTP-based. There is no Socket.io or WebSocket layer checked into the repository today, but the separation between state, transport, and domain logic keeps the system ready for that extension.
+- The frontend is a React + Vite admin interface for login, registration, dashboard metrics, order creation, and order history.
+- The backend is an Express 5 API structured around `config`, `routes`, `controllers`, `middlewares`, `validators`, and `models`.
+- MongoDB is accessed through Mongoose for persistence and aggregation.
+- Frontend state is coordinated through the Context API with `AuthContext` and `OrderContext`.
+- Authentication uses JWTs stored on the client and attached to protected API requests.
+- Runtime logging is handled by Winston and written to `server/logs`.
 
 ## Core Features
 
-- JWT authentication with protected routes and persistent client sessions.
-- Order creation with garment-level line items and server-side total calculation.
-- Order lifecycle management across `RECEIVED`, `PROCESSING`, `READY`, and `DELIVERED`.
-- Admin analytics dashboard for total orders, total revenue, and status distribution.
-- Motion-enhanced glassmorphism UI built with Tailwind CSS and Framer Motion.
+- User registration and login with JWT-based authentication.
+- Protected dashboard and order management views.
+- Order creation with garment line items and server-side total calculation.
+- Order history retrieval with optional status and search filters.
+- Order status updates across `RECEIVED`, `PROCESSING`, `READY`, and `DELIVERED`.
+- Dashboard metrics for total orders, total revenue, and grouped status counts.
 
 ## Tech Stack
 
 | Layer | Technologies |
 | --- | --- |
 | Frontend | React 19, Vite, React Router, Context API, Axios, Tailwind CSS, Framer Motion |
-| Backend | Node.js, Express 5, JWT, Zod, Winston |
+| Backend | Node.js, Express 5, JWT, Zod, Winston, UUID |
 | Database | MongoDB, Mongoose |
-| Architecture | Versioned REST API, modular controllers and middleware, centralized config and logging |
+| Tooling | ESLint, npm scripts, environment-driven configuration |
 
 ## High-Level Architecture
 
 ```mermaid
 flowchart LR
-    A[React Admin UI] --> B[AuthContext and OrderContext]
-    B --> C[Axios API Client with JWT Interceptor]
+    A[React UI] --> B[AuthContext and OrderContext]
+    B --> C[Axios API Client]
     C --> D[Express API /api/v1]
-    D --> E[Middleware Layer]
+    D --> E[Validation and Auth Middleware]
     E --> F[Controllers]
     F --> G[Mongoose Models]
     G --> H[(MongoDB)]
@@ -68,66 +71,112 @@ flowchart LR
 
 ### Request Flow
 
-1. The React app boots inside `BrowserRouter` and wraps the UI with `AuthProvider` and `OrderProvider`.
-2. `AuthContext` restores the session from `localStorage`, while `ProtectedRoute` blocks unauthenticated access.
-3. `OrderContext` owns order CRUD actions and dashboard reads, keeping state changes centralized instead of scattering fetch logic across pages.
-4. The shared Axios client injects the JWT into the `Authorization` header for every protected request.
-5. Express routes forward requests through validation and auth middleware before reaching controllers.
-6. Controllers handle business logic such as password hashing, token generation, total calculation, status updates, and dashboard aggregation.
-7. Mongoose models persist domain data into MongoDB.
+1. The React app initializes inside `BrowserRouter` and is wrapped by `AuthProvider` and `OrderProvider`.
+2. `AuthContext` restores the stored session from `localStorage` and exposes login, register, and logout actions.
+3. `OrderContext` centralizes order mutations and dashboard reads, keeping data access out of individual pages.
+4. The shared Axios instance prefixes requests with `VITE_BACKEND_URL/api/v1` and injects `Authorization: Bearer <token>` when a token exists.
+5. Express routes apply request validation and authentication before controller logic runs.
+6. Controllers execute business logic such as hashing passwords, generating JWTs, calculating totals, updating statuses, and aggregating dashboard data.
+7. Mongoose models persist documents to MongoDB.
 
 ### Real-Time Communication
 
-The current implementation uses authenticated REST endpoints plus Context-driven state updates rather than WebSockets. This keeps the data flow simple and predictable today, while leaving a clean insertion point for Socket.io later if live order-status broadcasting becomes a requirement.
+This repository does not currently use WebSockets or Socket.io. State updates are request-driven: the client mutates or fetches data through REST endpoints and updates Context state locally. That tradeoff keeps the implementation simpler today while leaving room for a later real-time layer if live order broadcasting becomes important.
+
+## Current Scope
+
+The documentation below reflects the code that is in this repository now, not the larger prompt-driven feature set captured in [AI_Prompt.md](/Users/ayushraj/Desktop/Project/Laundry/AI_Prompt.md).
+
+Implemented today:
+
+- Auth: register and login
+- Orders: create, list, update status
+- Dashboard: aggregate totals and status counts
+- Frontend: dashboard, order history, protected routes, create-order modal
+
+Not implemented in the current codebase:
+
+- WebSocket updates
+- Role-based access control
+- Redis, Kafka, or Docker runtime setup
+- Pagination, delete order, single-order lookup, or automated delivery-date logic
 
 ## Project Structure
 
 ```text
 .
+|-- AI_Prompt.md
+|-- AI_uses.md
+|-- README.md
 |-- client
-|   |-- src
-|   |   |-- components
-|   |   |-- context
-|   |   |-- layouts
-|   |   |-- pages
-|   |   `-- services
-|   `-- .env.example
-|-- server
-|   |-- src
-|   |   |-- config
-|   |   |-- controllers
-|   |   |-- middlewares
-|   |   |-- models
-|   |   |-- routes
-|   |   `-- validators
-|   `-- .env.example
-`-- README.md
+|   |-- .env.example
+|   |-- package.json
+|   `-- src
+|       |-- components
+|       |-- context
+|       |-- layouts
+|       |-- pages
+|       `-- services
+`-- server
+    |-- .env.example
+    |-- package.json
+    |-- logs
+    `-- src
+        |-- config
+        |-- controllers
+        |-- middlewares
+        |-- models
+        |-- routes
+        `-- validators
 ```
-
-Backend modularity is the key scaling choice here: transport concerns live in routes, cross-cutting concerns live in middleware, business logic lives in controllers, and persistence logic lives in models and database configuration.
 
 ## Key Technical Challenges and Solutions
 
-| Challenge | Solution | Engineering Outcome |
+| Challenge | Current Solution | Practical Outcome |
 | --- | --- | --- |
-| Keeping dashboard analytics fast as order volume grows | The dashboard endpoint uses MongoDB aggregation to compute revenue and status distribution on the server instead of pushing raw data to the client for reduction. | Smaller payloads, simpler frontend code, and a better path to scaling analytics. |
-| Maintaining consistent auth across the app | Authentication is centralized with `AuthContext`, JWT issuance on the backend, and an Axios interceptor that appends `Authorization: Bearer <token>` automatically. | One authentication flow for every protected page and API request. |
-| Updating operational state without full-page reloads | `OrderContext` updates in-memory order state after create and status-change mutations instead of forcing a hard refresh. | Faster UI feedback and less unnecessary network traffic. |
-| Preserving glassmorphism performance | Blur and transparency are scoped to cards and modal surfaces, while Framer Motion is used for targeted transitions instead of expensive full-screen effects. | A more polished interface without turning the visual layer into a rendering bottleneck. |
-| Preventing malformed writes from reaching MongoDB | Zod validators run at the route boundary before controllers execute. | Cleaner controller code and safer data entering persistence. |
+| Keeping auth logic consistent across the app | Auth responsibilities are centralized in `AuthContext`, backend auth routes, and a shared Axios request interceptor. | Protected calls use one token flow instead of each page reimplementing it. |
+| Preventing malformed order payloads from reaching MongoDB | Zod schemas validate auth and order payloads at the route boundary. | Controllers stay focused on business logic, not low-level shape checks. |
+| Returning dashboard summaries efficiently | The dashboard endpoint uses MongoDB aggregation for revenue totals and status counts. | The client receives ready-to-render metrics instead of raw order lists. |
+| Keeping UI state responsive after writes | `OrderContext` updates local state after create and status-change requests. | The dashboard and order history feel immediate without hard reloads. |
+| Supporting a polished interface without heavy UI libraries | Tailwind handles layout and surfaces, while Framer Motion is used for targeted entrance and modal transitions. | The UI stays lightweight and readable. |
 
 ## API Documentation
 
 Base URL: `http://localhost:8000/api/v1`
 
-| Domain | Method | Endpoint | Auth Required | Description | Payload / Query Notes |
-| --- | --- | --- | --- | --- | --- |
-| Auth | `POST` | `/auth/register` | No | Register a new user and return a JWT plus safe user data. | Body: `name`, `email`, `password` |
-| Auth | `POST` | `/auth/login` | No | Authenticate an existing user and return a JWT. | Body: `email`, `password` |
-| Orders | `POST` | `/orders` | Yes | Create a new order with garment line items. | Body: `customerName`, `phone`, `garments[]` |
-| Orders | `GET` | `/orders` | Yes | Fetch orders for the operations table. | Query: optional `status`, optional `search` |
-| Orders | `PUT` | `/orders/:id/status` | Yes | Update the workflow status of an order. | Body: `status` |
-| Dashboard | `GET` | `/orders/dashboard` | Yes | Fetch aggregate operational metrics. | Returns total orders, total revenue, and grouped status stats |
+### Auth
+
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `POST` | `/auth/register` | No | Register a new user and return a JWT with safe user data. |
+| `POST` | `/auth/login` | No | Authenticate a user and return a JWT. |
+
+### Orders
+
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `POST` | `/orders` | Yes | Create an order from customer and garment payload data. |
+| `GET` | `/orders` | Yes | Fetch orders, optionally filtered by `status` and `search`. |
+| `PUT` | `/orders/:id/status` | Yes | Update the status of an existing order. |
+
+### Dashboard
+
+| Method | Endpoint | Auth | Description |
+| --- | --- | --- | --- |
+| `GET` | `/orders/dashboard` | Yes | Return total orders, total revenue, and grouped status metrics. |
+
+### Example Order Payload
+
+```json
+{
+  "customerName": "Aarav Sharma",
+  "phone": "9876543210",
+  "garments": [
+    { "type": "Shirt", "quantity": 2, "price": 80 },
+    { "type": "Suit", "quantity": 1, "price": 250 }
+  ]
+}
+```
 
 ### Order Status Enum
 
@@ -135,55 +184,57 @@ Base URL: `http://localhost:8000/api/v1`
 
 ## Database Schema
 
-```mermaid
-erDiagram
-    USER {
-        ObjectId _id
-        string name
-        string email
-        string password
-        date createdAt
-        date updatedAt
-    }
+### User
 
-    ORDER {
-        ObjectId _id
-        string orderId
-        string customerName
-        string phone
-        number totalAmount
-        string status
-        date createdAt
-        date updatedAt
-    }
+```js
+{
+  name: String,
+  email: {
+    type: String,
+    unique: true
+  },
+  password: String
+}
+```
 
-    GARMENT {
-        string type
-        number quantity
-        number price
-    }
+### Order
 
-    ORDER ||--o{ GARMENT : embeds
+```js
+{
+  orderId: String,
+  customerName: String,
+  phone: String,
+  garments: [
+    {
+      type: String,
+      quantity: Number,
+      price: Number
+    }
+  ],
+  totalAmount: Number,
+  status: {
+    type: String,
+    enum: ["RECEIVED", "PROCESSING", "READY", "DELIVERED"],
+    default: "RECEIVED"
+  }
+}
 ```
 
 ### Collection Notes
 
 - `users`
-  - Stores application users with a unique email and hashed password.
+  - Stores unique emails and hashed passwords.
 - `orders`
-  - Stores a public-facing `orderId` plus embedded garment line items.
-  - `totalAmount` is derived server-side from garment quantity and price.
-  - `status` is restricted to an enum, which keeps reporting and UI rendering predictable.
+  - Stores a generated `orderId`, customer details, embedded garments, computed totals, and workflow status.
 
 ## Engineering Highlights
 
-- Engineering-first backend design with clear module boundaries across routing, middleware, validation, controllers, and persistence.
-- Versioned API namespace (`/api/v1`) to support backward-compatible expansion over time.
-- Shared request validation through Zod to reduce controller complexity and tighten data contracts.
-- JWT-protected operational routes with a single auth middleware boundary.
-- Centralized logging with Winston for runtime observability and easier debugging.
-- Frontend state management intentionally kept simple with Context API, which is sufficient for this app while preserving a clean upgrade path to heavier state tooling if usage expands.
-- Architecture is ready for scale-forward additions such as indexed search, Redis caching, background workers, or Socket.io-based live updates without a full rewrite.
+- Engineering-first backend structure with clear boundaries between routing, validation, auth, controller logic, and persistence.
+- Versioned API routing through `/api/v1`, which gives future changes a stable namespace.
+- Centralized logging through Winston with separate log files for combined and error output.
+- Request validation through Zod rather than ad hoc controller checks.
+- Context API used deliberately instead of heavier client state tooling because the current state surface is still manageable.
+- Documentation aligned to the current repository rather than the broader prompt spec, which makes it safer for onboarding and review.
 
 ## Installation and Environment
 
@@ -205,39 +256,47 @@ npm install
 
 ### 2. Configure Environment Variables
 
-Create local environment files from the provided templates:
+Create local env files from the templates:
 
 ```bash
 cp server/.env.example server/.env
 cp client/.env.example client/.env
 ```
 
-#### Server Environment
+### Server `.env`
 
-| Variable | Required | Description | Example |
-| --- | --- | --- | --- |
-| `PORT` | Yes | Express server port | `8000` |
-| `NODE_ENV` | Yes | Runtime mode for logging and behavior | `development` |
-| `MONGO_URI` | Yes | MongoDB connection string | `mongodb+srv://<username>:<password>@<cluster>/` |
-| `MONGO_DB_NAME` | Yes | Database name | `Laundry` |
-| `JWT_SECRET` | Yes | Secret used to sign and verify JWTs | `replace-with-a-long-random-secret` |
+```env
+# Server
+PORT=8000
+NODE_ENV=development
 
-#### Client Environment
+# MongoDB
+MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/
+MONGO_DB_NAME=Laundry
 
-| Variable | Required | Description | Example |
-| --- | --- | --- | --- |
-| `VITE_BACKEND_URL` | Yes | Public base URL of the backend | `http://localhost:8000` |
+# FRONTEND
+FRONTEND_URL=http://localhost:5173
+
+# Auth
+JWT_SECRET=replace-with-a-long-random-secret
+```
+
+### Client `.env`
+
+```env
+VITE_BACKEND_URL=http://localhost:8000
+```
 
 ### 3. Run the Application
 
-Start the backend:
+Backend:
 
 ```bash
 cd server
 npm run dev
 ```
 
-In a second terminal, start the frontend:
+Frontend:
 
 ```bash
 cd client
@@ -249,25 +308,11 @@ Default local URLs:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:8000`
 
-### 4. Production Build
+### 4. Production-Oriented Notes
 
-Build the frontend:
-
-```bash
-cd client
-npm run build
-```
-
-Start the backend in standard Node mode:
-
-```bash
-cd server
-npm start
-```
-
-### Docker Note
-
-This repository is currently configured for npm-first local development. Dockerfiles or Compose manifests are not checked in yet, but the recommended production topology is a three-service split: `client`, `server`, and `mongo`, with environment variables injected per service rather than hardcoded at build time.
+- The backend currently exposes npm-based local startup only.
+- There is no checked-in Docker or Compose configuration in this repository.
+- CORS behavior depends on `FRONTEND_URL` plus local development origins configured in `server/src/app.js`.
 
 ## Available Scripts
 
@@ -275,8 +320,8 @@ This repository is currently configured for npm-first local development. Dockerf
 
 | Command | Description |
 | --- | --- |
-| `npm run dev` | Start the API with Node's file watcher for local development |
-| `npm start` | Start the API in standard runtime mode |
+| `npm run dev` | Start the API with Node's file watcher |
+| `npm start` | Start the API without watch mode |
 | `npm test` | Placeholder test command |
 
 ### Client
@@ -284,6 +329,6 @@ This repository is currently configured for npm-first local development. Dockerf
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the Vite development server |
-| `npm run build` | Create a production frontend build |
-| `npm run preview` | Preview the built frontend locally |
+| `npm run build` | Build the frontend for production |
+| `npm run preview` | Preview the production build locally |
 | `npm run lint` | Run ESLint |

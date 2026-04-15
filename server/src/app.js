@@ -1,3 +1,5 @@
+/* This code snippet is a JavaScript file named `app.js` that sets up a basic Express server with CORS
+(Cross-Origin Resource Sharing) configuration. Here's a breakdown of what the code is doing: */
 // app.js
 import express from "express";
 import cors from "cors";
@@ -10,6 +12,7 @@ const allowedOrigins = [
   "http://localhost:3000",  
   "http://127.0.0.1:3000",
   "http://localhost:5173",
+  process.env.FRONTEND_URL
 ]
 
 const corsOptions = {

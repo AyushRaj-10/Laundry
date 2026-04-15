@@ -1,3 +1,13 @@
+/**
+ * The above functions handle creating, fetching, updating orders, and providing dashboard data for an
+ * order management system.
+ * @param req - `req` stands for request and it is an object that represents the HTTP request made by
+ * the client to the server. It contains information such as the request headers, body, parameters,
+ * query strings, and more. In the context of the code you provided, `req` is used to access data
+ * @param res - The `res` parameter in the functions refers to the response object in Express.js. It is
+ * used to send a response back to the client making the request. The response object (`res`) has
+ * methods like `json()` to send JSON responses, `status()` to set the HTTP status code of the
+ */
 import Order from "../models/order.models.js";
 import { v4 as uuidv4 } from "uuid";
 import logger from "../config/logger.js";

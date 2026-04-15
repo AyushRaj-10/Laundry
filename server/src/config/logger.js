@@ -1,3 +1,5 @@
+/* This code snippet is setting up a logger using the Winston library in a Node.js application. Here's
+a breakdown of what it does: */
 import winston from "winston";
 import config from "./index.js"
 

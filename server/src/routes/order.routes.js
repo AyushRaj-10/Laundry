@@ -1,3 +1,6 @@
+/* This code snippet is setting up a router using Express in a Node.js application. It imports
+necessary modules such as Express, controller functions for registering and logging in users,
+validation middleware, and validation schemas. */
 // routes/order.routes.js
 import express from "express";
 import {
