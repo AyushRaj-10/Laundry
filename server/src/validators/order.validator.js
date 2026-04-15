@@ -1,3 +1,5 @@
+/* This code snippet is written in JavaScript and it is using the Zod library for data validation.
+Here's a breakdown of what the code is doing: */
 import { z } from "zod";
 
 export const createOrderSchema = z.object({

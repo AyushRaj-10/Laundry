@@ -1,3 +1,7 @@
+/**
+ * The function `startServer` connects to a MongoDB database, starts the server using the configuration
+ * from `config`, and logs the server running status.
+ */
 // server.js
 import app from "./app.js";
 import config from "./config/index.js";

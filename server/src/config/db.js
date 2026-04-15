@@ -1,3 +1,5 @@
+/* The `MongoConnection` class manages the connection to a MongoDB database using Mongoose in a Node.js
+application. */
 import mongoose from "mongoose"
 import config from "./index.js"
 import logger from "./logger.js"
