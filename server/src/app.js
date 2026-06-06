@@ -5,6 +5,8 @@ import express from "express";
 import cors from "cors";
 import orderRoutes from "./routes/order.routes.js";
 import authRoutes from "./routes/auth.routes.js";
+import logger from "./config/logger.js";
+import { getMetrics , metricsMiddleware} from "./config/prom.js";
 
 const app = express();
 
@@ -46,8 +48,10 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
+app.use(metricsMiddleware);
 
 app.use("/api/v1/orders", orderRoutes);
 app.use("/api/v1/auth", authRoutes);
+app.get('/metrics', getMetrics);
 
 export default app;
