@@ -3,28 +3,26 @@ pipeline {
 
     stages {
 
-        stage('Show Files') {
+        stage('Check Tools') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
+                sh 'node --version'
+                sh 'npm --version'
             }
         }
 
-        stage('Check Client') {
+        stage('Install Client Dependencies') {
             steps {
-                sh '''
-                cd client
-                ls -la
-                '''
+                dir('client') {
+                    sh 'npm install'
+                }
             }
         }
 
-        stage('Check Server') {
+        stage('Install Server Dependencies') {
             steps {
-                sh '''
-                cd server
-                ls -la
-                '''
+                dir('server') {
+                    sh 'npm install'
+                }
             }
         }
     }
