@@ -17,12 +17,18 @@ pipeline {
         stage('Install Client') {
             steps {
                 dir('client') {
-                    sh 'npm ci'
+                    retry(3) {
+                        sh 'npm ci'
+                    }
                 }
             }
         }
 
         stage('Build Client') {
+            options {
+                timeout(time: 5, unit: 'MINUTES')
+            }
+
             steps {
                 dir('client') {
                     sh 'npm run build'
@@ -30,7 +36,6 @@ pipeline {
             }
         }
 
-        // 👇 Add it here
         stage('Archive Frontend') {
             steps {
                 archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
@@ -40,7 +45,9 @@ pipeline {
         stage('Install Server') {
             steps {
                 dir('server') {
-                    sh 'npm ci'
+                    retry(3) {
+                        sh 'npm ci'
+                    }
                 }
             }
         }
@@ -52,15 +59,39 @@ pipeline {
                 }
             }
         }
+
+        stage('Security Scan') {
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                    sh 'exit 1'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            when {
+                expression {
+                    currentBuild.currentResult == 'SUCCESS'
+                }
+            }
+
+            steps {
+                echo 'Deploying...'
+            }
+        }
     }
 
     post {
         success {
-            echo 'Pipeline completed successfully'
+            echo 'Deploy successful'
         }
 
         failure {
-            echo 'Pipeline failed'
+            echo 'Notify team'
+        }
+
+        always {
+            echo 'Cleanup workspace'
         }
     }
 }
