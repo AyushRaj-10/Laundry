@@ -30,6 +30,13 @@ pipeline {
             }
         }
 
+        // 👇 Add it here
+        stage('Archive Frontend') {
+            steps {
+                archiveArtifacts artifacts: 'client/dist/**', fingerprint: true
+            }
+        }
+
         stage('Install Server') {
             steps {
                 dir('server') {
