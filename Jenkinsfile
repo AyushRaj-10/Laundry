@@ -3,25 +3,34 @@ pipeline {
 
     stages {
 
-        stage('Check Tools') {
-            steps {
-                sh 'node --version'
-                sh 'npm --version'
-            }
-        }
-
-        stage('Install Client Dependencies') {
+        stage('Install Client') {
             steps {
                 dir('client') {
-                    sh 'npm install'
+                    sh 'npm ci'
                 }
             }
         }
 
-        stage('Install Server Dependencies') {
+        stage('Build Client') {
+            steps {
+                dir('client') {
+                    sh 'npm run build'
+                }
+            }
+        }
+
+        stage('Install Server') {
             steps {
                 dir('server') {
-                    sh 'npm install'
+                    sh 'npm ci'
+                }
+            }
+        }
+
+        stage('Test Server') {
+            steps {
+                dir('server') {
+                    sh 'npm test'
                 }
             }
         }
