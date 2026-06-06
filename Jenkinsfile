@@ -2,16 +2,12 @@ pipeline {
     agent any
 
     stages {
-
-        stage('Build Docker Image') {
+        stage('Check Environment') {
             steps {
-                sh 'docker build -t laundry .'
-            }
-        }
-
-        stage('List Images') {
-            steps {
-                sh 'docker images'
+                sh 'pwd'
+                sh 'whoami'
+                sh 'which docker || echo "Docker not installed"'
+                sh 'docker --version || true'
             }
         }
     }
