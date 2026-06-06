@@ -3,6 +3,7 @@
  * from `config`, and logs the server running status.
  */
 // server.js
+import "./config/tracing.js";
 import app from "./app.js";
 import config from "./config/index.js";
 import mongoConnection from "./config/db.js";

@@ -108,6 +108,8 @@ Not implemented in the current codebase:
 |-- AI_Prompt.md
 |-- AI_uses.md
 |-- README.md
+|--docker-compose.yml
+|--prometheus.yml
 |-- client
 |   |-- .env.example
 |   |-- package.json
@@ -121,6 +123,7 @@ Not implemented in the current codebase:
     |-- .env.example
     |-- package.json
     |-- logs
+    |--Dockerfile
     `-- src
         |-- config
         |-- controllers

@@ -2,7 +2,7 @@
 a breakdown of what it does: */
 import winston from "winston";
 import config from "./index.js"
-
+import LokiTransport from "winston-loki";
 /**
  * Winston logger configuration
  * Provides logging!
@@ -21,6 +21,11 @@ const logger = winston.createLogger({
     transports: [
         new winston.transports.File({ filename: 'logs/error.log', level: "error" }),
         new winston.transports.File({ filename: 'logs/combined.log' }),
+        new LokiTransport({
+            host : "http://loki:3100",
+            labels: { job: "Laundry-service" },
+            format: winston.format.json()
+        })
     ],
 })
 
