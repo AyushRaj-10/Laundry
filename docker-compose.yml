@@ -52,3 +52,9 @@ services:
     ports:
       - "4318:4318"
       - "4317:4317"
+
+  jenkins:
+    image: jenkins/jenkins
+    container_name: jenkins
+    ports:
+        - "8080:8080"
