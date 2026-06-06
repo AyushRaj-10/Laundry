@@ -2,12 +2,29 @@ pipeline {
     agent any
 
     stages {
-        stage('Check Environment') {
+
+        stage('Show Files') {
             steps {
                 sh 'pwd'
-                sh 'whoami'
-                sh 'which docker || echo "Docker not installed"'
-                sh 'docker --version || true'
+                sh 'ls -la'
+            }
+        }
+
+        stage('Check Client') {
+            steps {
+                sh '''
+                cd client
+                ls -la
+                '''
+            }
+        }
+
+        stage('Check Server') {
+            steps {
+                sh '''
+                cd server
+                ls -la
+                '''
             }
         }
     }
