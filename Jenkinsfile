@@ -2,10 +2,16 @@ pipeline {
     agent any
 
     stages {
-        stage('Hello') {
+
+        stage('Build Docker Image') {
             steps {
-                echo 'Hello Jenkins!'
-                echo 'Build triggered successfully'
+                sh 'docker build -t laundry .'
+            }
+        }
+
+        stage('List Images') {
+            steps {
+                sh 'docker images'
             }
         }
     }
